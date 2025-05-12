@@ -61,6 +61,7 @@ if ($tipo == "registrar") {
             $apellidos_nombres = $_POST['apellidos_nombres'];
             $correo = $_POST['correo'];
             $telefono = $_POST['telefono'];
+            $password =password_hash($dni,PASSWORD_DEFAULT);
 
             if ($dni == "" || $apellidos_nombres == "" || $correo == "" || $telefono == "") {
                 //repuesta
@@ -70,7 +71,7 @@ if ($tipo == "registrar") {
                 if ($arr_Usuario) {
                     $arr_Respuesta = array('status' => false, 'mensaje' => 'Registro Fallido, Usuario ya se encuentra registrado');
                 } else {
-                    $id_usuario = $objUsuario->registrarUsuario($dni, $apellidos_nombres, $correo, $telefono);
+                    $id_usuario = $objUsuario->registrarUsuario($dni, $apellidos_nombres, $correo, $telefono,$password);
                     if ($id_usuario > 0) {
                         // array con los id de los sistemas al que tendra el acceso con su rol registrado
                         // caso de administrador y director

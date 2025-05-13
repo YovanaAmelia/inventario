@@ -290,46 +290,24 @@ function reset_password(id) {
     });
 }
 async function reniciar_password(id) {
-
-    // generamos el formulario
-    const formData = new FormData();
-    formData.append('id', id);
-    formData.append('sesion', session_session);
-    formData.append('token', token_token);
-    try {
-        let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=reiniciar_password', {
+}
+    async function sent_email_password() {
+        const datos = new FormData();
+        formData.append('sesion', session_session);
+        formData.append('token', token_token);
+        try {
+            let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=sent_email_password',{
             method: 'POST',
             mode: 'cors',
             cache: 'no-cache',
-            body: formData
+            body: datos
         });
-        json = await respuesta.json();
-        if (json.status) {
-            Swal.fire({
-                type: 'success',
-                title: 'Actualizar',
-                text: json.mensaje,
-                confirmButtonClass: 'btn btn-confirm mt-2',
-                footer: '',
-                confirmButtonText: "Aceptar"
-            });
-        } else if (json.msg == "Error_Sesion") {
-            alerta_sesion();
-        } else {
-            Swal.fire({
-                type: 'error',
-                title: 'Error',
-                text: json.mensaje,
-                confirmButtonClass: 'btn btn-confirm mt-2',
-                footer: '',
-                timer: 1000
-            })
-        }
-        //console.log(json);
-    } catch (e) {
-        console.log("Error al actualizar periodo" + e);
+    
+    
+} catch (error) {
+    
+
+    }
     }
 
-
-}
 

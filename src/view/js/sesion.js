@@ -73,8 +73,8 @@ async function cerrar_sesion() {
 
 async function sent_email_password() {
     const datos = new FormData();
-    formData.append('sesion', session_session);
-    formData.append('token', token_token);
+    datos.append('sesion', session_session);
+    datos.append('token', token_token);
     try {
         let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=sent_email_password',{
         method: 'POST',
@@ -85,7 +85,6 @@ async function sent_email_password() {
 
 
 } catch (error) {
-console.log("Error " + e);{    
-}
+
 }
 }

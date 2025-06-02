@@ -202,8 +202,7 @@ try {
     $mail->isHTML(true); 
     $mail->CharSet='UTF-8';                                 //Set email format to HTML
     $mail->Subject = 'cambio de contraseña-Sistema de Inventario';
-    $mail->Body    = '
-    <!DOCTYPE html>
+    $mail->Body    = '<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">

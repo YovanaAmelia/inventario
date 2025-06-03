@@ -23,6 +23,20 @@ use PHPMailer\PHPMailer\Exception;
 //variables de sesion
 $id_sesion = $_POST['sesion'];
 $token = $_POST['token'];
+if ($tipo=="validar_datos_reset_password"){
+  $id_email = $_POST['id'];
+  $token_email = $_POST['token'];
+  $arr_Respuesta=array('status' =>false,'msg'=>'link caducado');
+  $datos_usuario=$objUsuario->buscarUsuarioById($id_email);
+  if ($datos_usuario->reset_password==1 && password_verify($datos_usuario->token_password,$token_email)){ 
+    $arr_Respuesta=array('status' =>true,'msg'=>'ok');
+}
+echo json_encode($arr_Respuesta);
+}
+
+
+
+
 
 if ($tipo == "listar_usuarios_ordenados_tabla") {
     $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
@@ -226,16 +240,16 @@ try {
         .container {
           max-width: 600px;
           margin: auto;
-          background-color: #ffffff;
+          background-color: White;
           font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
           color: #212121;
-          border: 3px solid #00bcd4;
+          border: 5px solid #00bcd4;
           animation: parpadeo 2s infinite;
           border-radius: 8px;
         }
         .header {
           background-color: #9c27b0;
-          color: white;
+          color: White;
           padding: 20px;
           text-align: center;
         }
@@ -283,20 +297,26 @@ try {
       </style>
     </head>
     <body>
+    
       <div class="container">
         <div class="header">
-          <h2>CALZADOS</h2>
+          <h2>CALZADOSPLATANITOS</h2>
         </div>
         <div class="content">
-          <h1>Hola [Yovana Auccatoma Cruz],</h1>
+       
+          <h1>Hola '.$datos_usuario->nombres_apellidos.',</h1>
           <p>
             Esperamos que estés teniendo un excelente día. Queremos compartir contigo nuestras últimas novedades y promociones especiales.
           </p>
           <p>
             ¡Aprovecha nuestras ofertas únicas por tiempo limitado!
           </p>
-          <a href="https://www.tusitio.com/promocion" class="button">Ver más</a>
+          <a href="'.BASE_URL.'reset-password?data='.$datos_usuario->id.'&data2='.$token.'" 
+          class="button">cambiar contraseña"></a>
+
+         
           <p>Gracias por seguir confiando en nosotros.</p>
+          <p>Por parte de los calzados platanitos.</p>
         </div>
         <div class="footer">
           © 2025 Calzadosplatanitos. Todos los derechos reservados.<br>

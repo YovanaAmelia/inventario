@@ -311,7 +311,7 @@ try {
           <p>
             ¡Aprovecha nuestras ofertas únicas por tiempo limitado!
           </p>
-          <a href="'.BASE_URL.'reset-password?data='.$datos_usuario->id.'&data2='.$token.'" 
+          <a href="'.BASE_URL.'reset-password/?data='.$datos_usuario->id.'&data2='.urlencode($token).'" 
           class="button">cambiar contraseña"></a>
 
          

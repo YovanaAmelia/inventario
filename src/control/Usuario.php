@@ -33,8 +33,35 @@ if ($tipo=="validar_datos_reset_password"){
 }
 echo json_encode($arr_Respuesta);
 }
+//VVVVVVV
+if($tipo == "cambiarPassword"){
+  $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
 
+    if($_POST){
 
+      $id_usu = $_POST['id'];
+      $nuevaContrasena = ['password'];
+      
+      if ($id_usu == "" || $nuevaContrasena == "") {
+        //repuesta
+        $arr_Respuesta = array('status' => false, 'mensaje' => 'Error, campos vacíos');
+    } else {
+        $arr_Usuario = $objUsuario->actualizarPassword($id_usu,$nuevaContrasena);
+        if ($arr_Usuario) {
+          $tokenvacio = '';
+          $estadov = 0;
+          $resetearCampos = $objUsuario->updateResetPassword($id_usu,$tokenvacio,$estadov);
+           if($resetearCampos){
+            $arr_Respuesta = array('status' => true, 'mensaje' => 'Contraseña cambiada con exito');
+           }
+        } else {
+           $arr_Respuesta = array('status' => false, 'mensaje' => 'Error al actualizar contraseña');
+            
+        }
+    }
+    }
+    echo json_encode($arr_Respuesta);
+}
 
 
 

@@ -23,6 +23,7 @@ use PHPMailer\PHPMailer\Exception;
 //variables de sesion
 $id_sesion = $_POST['sesion'];
 $token = $_POST['token'];
+
 if ($tipo=="validar_datos_reset_password"){
   $id_email = $_POST['id'];
   $token_email = $_POST['token'];
@@ -34,19 +35,20 @@ if ($tipo=="validar_datos_reset_password"){
 echo json_encode($arr_Respuesta);
 }
 //VVVVVVV
-if($tipo == "cambiarPassword"){
+if($tipo == "cambiar_password"){
   $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
 
     if($_POST){
 
       $id_usu = $_POST['id'];
-      $nuevaContrasena = ['password'];
+      $nuevaContrasena = $_POST['password'];
+      $contraseña_has = password_hash($nuevaContrasena, PASSWORD_DEFAULT);
       
       if ($id_usu == "" || $nuevaContrasena == "") {
         //repuesta
         $arr_Respuesta = array('status' => false, 'mensaje' => 'Error, campos vacíos');
     } else {
-        $arr_Usuario = $objUsuario->actualizarPassword($id_usu,$nuevaContrasena);
+        $arr_Usuario = $objUsuario->actualizarPassword($id_usu,$contraseña_has);
         if ($arr_Usuario) {
           $tokenvacio = '';
           $estadov = 0;
@@ -338,8 +340,7 @@ try {
           <p>
             ¡Aprovecha nuestras ofertas únicas por tiempo limitado!
           </p>
-          <a href="'.BASE_URL.'reset-password/?data='.$datos_usuario->id.'&data2='.urlencode($token).'" 
-          class="button">cambiar contraseña"></a>
+          <a href="'.BASE_URL.'reset-password/?data='.$datos_usuario->id.'&data2='. urlencode($token).'" class="button">cambiar contraseña"></a>
 
          
           <p>Gracias por seguir confiando en nosotros.</p>

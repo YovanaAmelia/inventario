@@ -232,40 +232,40 @@ return;
         });
         return;
     }else{  
-    actualizar_password();
-}
-}
-async function actualizar_password(){
+    
 //enviar infornacion de password y id al controlador usuario capturarr y pegar 
 // recibir informacion y encriptar la nueva contraseña
 //guardar en base de datos y actualizar campo de reset_password=0 y token_password=''
 //notificar a usuario sobre el estado del proceso
+actualizar_password();
+}
+}
+async function actualizar_password(){
  let password = document.getElementById('password').value;
  let id = document.getElementById('data').value;
 const formData = new FormData();
+formData.append('password', password);
 formData.append('id', id);
-formData.append('token', token);
+    formData.append('token', '');
 formData.append('sesion', '');
 
 try {
-    let respuesta = await fetch(base_url_server + 'src/control/usuario.php?tipo=cambiar_password', {
+    let respuesta = await fetch(base_url_server + 'src/control/Usuario.php?tipo=cambiar_password', {
         method: 'POST',
         mode: 'cors',
         cache: 'no-cache',
         body: formData,
     });
     let json = await respuesta.json();
-    if (json.status == false) {
+    if (json.status) {
         Swal.fire({
-            type: 'error',
+            type: 'success',
             title: 'Actualizado ',
             text: "Actualizada",
             confirmButtonClass: 'btn btn-confirm mt-2',
             footer: '',
             timer: 1000
         });
-        let formulario=document.getElementById('frm_reset_password');
-        formulario.innerHTML=`texto de prueba`;
         
         ///location.replace(base_url + "login");
     }

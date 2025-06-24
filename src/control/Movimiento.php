@@ -208,7 +208,7 @@ if ($tipo == "datos_registro") {
     }
     echo json_encode($arr_Respuesta);
 }
-// estructurar un objeto con sus atributos n formato json solo atributos simples kkkkkkkkkkkkk
+// estructurar un objeto con sus atributos n formato json solo atributos simples 
 if ($tipo == "buscar_movimiento_id") {
     $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
     if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
@@ -235,3 +235,5 @@ if ($tipo == "buscar_movimiento_id") {
     }
 echo json_encode($arr_Respuesta);
 }
+//quiero k envies a array respuestas asta el array vista todos los atributos de bd
+//funciones para manipular un array en php

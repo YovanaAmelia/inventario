@@ -242,6 +242,7 @@ foreach ($arrDetalle as $bien) {
     if ($res_bien) {
         array_push($arr_bienes, $res_bien); // Uso de array_push para agregar el bien
     }
+    //
 }
 //quiero k envies a array respuestas asta el array vista todos los atributos de bd
 //funciones para manipular un array en php

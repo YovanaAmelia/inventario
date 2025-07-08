@@ -220,9 +220,10 @@ if ($tipo == "buscar_movimiento_id") {
         $arrIes= $objInstitucion->buscarInstitucionById($arrMovimiento->id_ies);
         $arrDetalle=$objMovimiento->buscarDetalle_MovimientoByMovimiento($id_movimiento);
         $array_bienes = array();
-        foreach($Detalle as $bien){
+        foreach($arrDetalle as $bien){
             $id_bien = $bien->id_bien;
             $res_bien = $objBien->buscarBienById($id_bien);
+            array_push($array_bienes,$res_bien);
         }
         $arr_Respuesta['movimiento'] = $arrMovimiento;
         $arr_Respuesta['amb_origen'] = $arrAmbOrigen;
@@ -235,14 +236,7 @@ if ($tipo == "buscar_movimiento_id") {
     }
 echo json_encode($arr_Respuesta);
 }
-///777777
-foreach ($arrDetalle as $bien) {
-    $id_bien = $bien->id_bien;
-    $res_bien = $objBien->buscarBienById($id_bien);
-    if ($res_bien) {
-        array_push($arr_bienes, $res_bien); // Uso de array_push para agregar el bien
-    }
-    //
-}
-//quiero k envies a array respuestas asta el array vista todos los atributos de bd
-//funciones para manipular un array en php
+
+
+    
+

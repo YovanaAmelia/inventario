@@ -30,10 +30,9 @@ if (!isset($ruta[1]) || $ruta[1]=="") {
  } else {
     $respuesta = json_decode($response); 
     //print_r($respuesta);
- 
-    ?>
-    <!--
-   <!DOCTYPE html>
+    $contenido_pdf='';
+    $contenido_pdf.=' 
+   
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -89,14 +88,12 @@ if (!isset($ruta[1]) || $ruta[1]=="") {
   <div class="info">
     <p><strong>ENTIDAD:</strong> DIRECCIÓN REGIONAL DE EDUCACIÓN - AYACUCHO</p>
     <p><strong>ÁREA:</strong> OFICINA DE ADMINISTRACIÓN</p>
-    <p><strong>ORIGEN:</strong> <?php echo $respuesta ->amb_origen->codigo. ' - ' .$respuesta -> amb_origen->detalle;?></p>
-    <p><strong>DESTINO:</strong> <?php echo $respuesta ->amb_destino->codigo. ' - ' .$respuesta -> amb_destino->detalle;?></p>
-    <p><strong>MOTIVO (*):</strong> <?php echo $respuesta ->movimiento ->descripcion;?></p>
+    <p><strong>ORIGEN:</strong>'. $respuesta ->amb_origen->codigo.' ' .$respuesta -> amb_origen->codigo.'</p>
+    <p><strong>DESTINO:</strong> '. $respuesta ->amb_destino->codigo. '' .$respuesta -> amb_destino->codigo.'</p>
+    <p><strong>MOTIVO (*):</strong> '. $respuesta ->movimiento ->descripcion.'</p>
   </div>
 
-  <div class="motivo">
-    <p><strong>MOTIVO (*):</strong> ______</p>
-  </div>
+ 
 
   <table>
     <thead>
@@ -110,69 +107,56 @@ if (!isset($ruta[1]) || $ruta[1]=="") {
         <th>ESTADO</th>
       </tr>
     </thead>
+    <tbody>
+    ';
+ 
+    ?>
+    
     <?php
     $contador = 1;
     foreach ($respuesta->detalle as $bien) {
-         echo "<tr>";
-         echo "<tr>".$contador ."</td>";
-         echo "<tr>".$bien->denominacion ."</td>";
-         echo "<tr>";
-         $contador+=1;
-         foreach ($respuesta->detalle as $bien) {
-            echo "<tr>";
-            echo "<td>".$contador ."</td>";
-            echo "<td>".$bien->cod_patrimonial ."</td>";
-            echo "<td>".$bien->denominacion ."</td>";
-            echo "<td>".$bien->marca ."</td>";
-            echo "<td>".$bien->modelo ."</td>";
-            echo "<td>".$bien->color ."</td>";
-            echo "<td>".$bien->estado_conservacion ."</td>";
-            echo "<tr>";
+    $contenido_pdf.='<tr>';
+    $contenido_pdf .="<td>".$contador ."</td>";
+    $contenido_pdf .="<td>".$bien->cod_patrimonial ."</td>";
+    $contenido_pdf .="<td>".$bien->denominacion ."</td>";
+    $contenido_pdf .="<td>".$bien->marca ."</td>";
+    $contenido_pdf .="<td>".$bien->modelo ."</td>";
+    $contenido_pdf .="<td>".$bien->color ."</td>";
+    $contenido_pdf .="<td>".$bien->estado_conservacion ."</td>";
+    $contenido_pdf .="</tr>";
+    $contador+=1;
                
-
+    
          }
-    }
-    ?>
-    <tbody>
-      <tr>
-        <td>01</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td>02</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
+   
+
+    $contenido_pdf .="
+    
     </tbody>
   </table>
 
-  <div class="footer">
+
+  <div class='footer'>
     <p>Ayacucho, _ de __ del 2024</p>
   </div>
 
-  <div class="firmas">
+  <div class='firmas'>
     <div>
-      <p>___</p>
+      <p>__________________</p>
       <p>ENTREGUE CONFORME</p>
     </div>
     <div>
-      <p>___</p>
+      <p>________________</p>
       <p>RECIBÍ CONFORME</p>
     </div>
   </div>
 
 </body>
 </html>
-   -->
+    ";
+    ?>
+    
+     
     <?php
     require_once('./vendor/tecnickcom/tcpdf/tcpdf.php');
     $pdf =new TCPDF();
@@ -186,4 +170,15 @@ if (!isset($ruta[1]) || $ruta[1]=="") {
     //asignar
 
     $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
- }
+
+    //set font
+$pdf->SetFont('helvetica', 'B', 12);
+// add a page
+$pdf->AddPage();
+//the html cont
+$pdf->writeHTML($contenido_pdf);
+  //Close and output PDF document
+  ob_clean();
+$pdf->Output('example_006.pdf', 'I');
+
+}

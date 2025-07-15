@@ -10,86 +10,56 @@ if (!isset($ruta[1]) || $ruta[1] == "") {
 require_once('./vendor/tecnickcom/tcpdf/tcpdf.php');
 
 // 2. CREAR UNA CLASE PERSONALIZADA QUE EXTIENDE DE TCPDF
-class MYPDF extends TCPDF {
+
 
     // Método para el encabezado personalizado
-public function Header() {
-    // --- RUTA ABSOLUTA A LAS IMÁGENES JPG ---
-    $image_path_goba = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT72gURRvO9EMLPg4EM7_0Ttl2u52Xigbe6IA&s';
-    $image_path_dre = 'https://dreayacucho.gob.pe/storage/directory/ZOOEA2msQPiXYkJFx4JLjpoREncLFn-metabG9nby5wbmc=-.webp';
+    class MYPDF extends TCPDF {
 
-    // --- LOGO IZQUIERDO ---
-    $this->Image($image_path_dre, 15, 8, 25, 0, '', '', 'T', false, 300, '', false, false, 0, false, false, false);
-    
-    // --- TEXTOS DEL CENTRO ---
-    $this->SetFont('helvetica', 'B', 10);
-    $this->SetY(10);
-    $this->Cell(0, 5, 'GOBIERNO REGIONAL DE AYACUCHO', 0, 1, 'C');
-    
-    $this->SetFont('helvetica', 'B', 12);
-    $this->Cell(0, 5, 'DIRECCIÓN REGIONAL DE EDUCACIÓN DE AYACUCHO', 0, 1, 'C');
-
-    $this->SetFont('helvetica', '', 9);
-    $this->Cell(0, 5, 'DIRECCION DE ADMINISTRACION', 0, 1, 'C');
-    
-    // --- DIBUJO DE LÍNEAS CON FUNCIONES NATIVAS (LA SOLUCIÓN) ---
-
-    // Parámetros para las líneas
-    $lineWidth = 140; // Ancho de las líneas en mm. Ajústalo si es necesario.
-    $pageWidth = $this->getPageWidth();
-    $x = ($pageWidth - $lineWidth) / 2; // Calcula la posición X para centrar las líneas
-    
-    // Línea superior (delgada, más oscura)
-    $y1 = 29; // Posición Y (distancia desde la parte superior de la página)
-    $this->SetFillColor(41, 91, 162); // Color #295BA2 en RGB
-    // Rect(x, y, ancho, alto, estilo) 'F' significa Relleno (Fill)
-    $this->Rect($x, $y1, $lineWidth, 0.5, 'F'); 
-
-    // Línea inferior (gruesa, más clara)
-    $y2 = $y1 + 1.2; // Posición Y, un poco debajo de la primera línea
-    $this->SetFillColor(51, 116, 194); // Color #3374C2 en RGB
-    $this->Rect($x, $y2, $lineWidth, 1, 'F');
-    
-    // --- TEXTO "ANEXO - 4 -" ---
-    // Lo dibujamos después de las líneas para que quede debajo
-    $this->SetY($y2 + 3); // Posicionamos el cursor debajo de las líneas
-    $this->SetFont('helvetica', 'B', 12);
-    $this->Cell(0, 10, 'ANEXO - 4 -', 0, 1, 'C');
-
-    // --- LOGO DERECHO ---
-    // Dibujamos este logo al final para asegurarnos que esté en la capa superior si se solapa.
-    $this->Image($image_path_goba, 170, 8, 25, 0, '', '', 'T', false, 300, 'R', false, false, 0, false, false, false);
-}
-public function Footer() {
-    $this->SetY(-20);
-    $this->SetFont('helvetica', '', 8);
-    $footer_html = '
-    <table border="0" cellpadding="1" cellspacing="0" width="100%">
-        <tr>
-            <!-- Columna Izquierda: URL -->
-            <td width="48%" align="center" valign="middle">
-                <a href="http://www.dreaya.gob.pe" style="color:#0000ff; text-decoration:underline; font-size:10pt;">www.dreaya.gob.pe</a>
-            </td>
-
-            <!-- Columna Central: Línea vertical roja -->
-            <!-- Truco: Usamos un div con un borde izquierdo dentro de una celda -->
-            <td width="4%" align="center">
-                <div style="border-left: 1px solid #C5232A; height: 15px;"> </div>
-            </td>
-
-            <!-- Columna Derecha: Información de contacto -->
-            <!-- Usamos entidades HTML para los iconos de teléfono (☎) y fax () -->
-            <td width="48%" align="left" valign="middle" style="font-size:8pt; line-height:1.4;">
-                Jr. 28 de Julio N° 383 - Huamanga<br>
-                ☎ (066) 31-2364<br>
-                 (066) 31-1395 Anexo 55001
-            </td>
-        </tr>
-    </table>
-    ';
-    $this->writeHTML($footer_html, true, false, true, false, '');
-}
-}
+      // Método para el encabezado personalizado
+      public function Header() {
+          // Rutas de logos
+          $logo_dre = 'https://dreayacucho.gob.pe/storage/directory/ZOOEA2msQPiXYkJFx4JLjpoREncLFn-metabG9nby5wbmc=-.webp';
+          $logo_goba = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT72gURRvO9EMLPg4EM7_0Ttl2u52Xigbe6IA&s';
+  
+          // Logo izquierdo
+          $this->Image($logo_dre, 15, 10, 22, 22, '', '', 'T', false, 300, '', false, false, 0, false, false, false);
+  
+          // Texto del encabezado
+          $this->SetFont('helvetica', 'B', 11);
+          $this->SetY(12);
+          $this->Cell(0, 6, 'GOBIERNO REGIONAL DE AYACUCHO', 0, 1, 'C');
+  
+          $this->SetFont('helvetica', 'B', 13);
+          $this->Cell(0, 6, 'DIRECCIÓN REGIONAL DE EDUCACIÓN DE AYACUCHO', 0, 1, 'C');
+  
+          $this->SetFont('helvetica', '', 10);
+          $this->Cell(0, 6, 'Direccion de Administración', 0, 1, 'C');
+  
+          // Línea decorativa inferior
+          $this->SetLineWidth(0.5);
+          $this->SetDrawColor(41, 91, 162);
+          $this->Line(15, 35, $this->getPageWidth() - 15, 35);
+  
+          // Logo derecho
+          $this->Image($logo_goba, 175, 10, 22, 22, '', '', 'T', false, 300, '', false, false, 0, false, false, false);
+      }
+  
+      // Método para el pie de página personalizado
+      public function Footer() {
+          $this->SetY(-20);
+          $this->SetFont('helvetica', 'I', 8);
+          $this->SetTextColor(100, 100, 100);
+  
+          // Línea divisoria
+          $this->SetDrawColor(200, 200, 200);
+          $this->Line(15, $this->GetY(), $this->getPageWidth() - 15, $this->GetY());
+  
+          // Texto de contacto
+          $this->SetY(-18);
+          $this->Cell(0, 10, 'DRE Ayacucho - Jr. 28 de Julio N° 383 - Huamanga | www.dreaya.gob.pe | ☎ (066) 31-2364', 0, 0, 'C');
+      }
+  }
+  
 
 
 $curl = curl_init(); //inicia la sesión cURL

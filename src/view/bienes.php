@@ -77,5 +77,7 @@
 <script src="<?php echo BASE_URL; ?>src/view/js/functions_bien.js"></script>
 <script>
     listar_BienesOrdenados();
+    //kkkk
+   
 </script>
 <!-- end page title -->

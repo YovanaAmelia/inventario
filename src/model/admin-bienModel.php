@@ -91,4 +91,13 @@ class BienModel
         }
         return $arrRespuesta;
     }
+    public function listarBienes(){
+        $arrRespuesta = array();
+        $sql = $this->conexion->query("SELECT * FROM bienes");
+    
+        while ($objeto = $sql->fetch_object()) {
+            array_push($arrRespuesta, $objeto);
+        }
+        return $arrRespuesta;
+        }
 }

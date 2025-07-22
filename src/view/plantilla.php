@@ -62,4 +62,5 @@ if ($vista == "login" || $vista == "404"|| $vista == "reset-password") {
     if($vista!='./src/view/imprimir-movimiento.php' && $vista!='./src/view/reporte-bienes.php'){
     include "./src/view/include/footer.php";
 }
+
 }

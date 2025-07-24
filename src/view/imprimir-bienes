@@ -6,7 +6,7 @@ date_default_timezone_set('America/Lima');
 $curl = curl_init();
 
 curl_setopt_array($curl, array(
-    CURLOPT_URL => BASE_URL_SERVER . "src/control/Usuario.php?tipo=listar_todos_usuarios&sesion=" . $_SESSION['sesion_id'] . "&token=" . $_SESSION['sesion_token'],
+    CURLOPT_URL => BASE_URL_SERVER . "src/control/Bien.php?tipo=listar_todos_bienes&sesion=" . $_SESSION['sesion_id'] . "&token=" . $_SESSION['sesion_token'],
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_FOLLOWLOCATION => true,
     CURLOPT_ENCODING => "",
@@ -68,7 +68,7 @@ $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // Configuración básica
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor('Alexis Valdivia');
-$pdf->SetTitle('Reporte de Usuarios');
+$pdf->SetTitle('Reporte de Bienes');
 $pdf->SetMargins(15, 40, 15); // Ajustado el margen superior
 $pdf->SetAutoPageBreak(TRUE, 30); // Espacio desde el pie
 $pdf->SetFont('helvetica', '', 10);
@@ -95,7 +95,7 @@ if($fecha_obj_actual instanceof DateTime){
 
 // Contenido HTML para el PDF
 $contenido_pdf = '
-<h2 style="text-align:center; text-transform:uppercase; color:#2c3e50;">REPORTE DE USUARIOS DEL SISTEMA</h2>
+<h2 style="text-align:center; text-transform:uppercase; color:#2c3e50;">REPORTE DE BIENES</h2>
 
 <div style="margin-bottom: 15px;">
     <p style="margin:6px 0;"><b>ENTIDAD</b>: DIRECCIÓN REGIONAL DE EDUCACIÓN - AYACUCHO</p>
@@ -106,10 +106,12 @@ $contenido_pdf = '
     <thead>
         <tr style="background-color:#eaeaea; color:#2c3e50;">
             <th style="border:1px solid #ccc; font-size:8px; text-align: center;">ITEM</th>
-            <th style="border:1px solid #ccc; font-size:8px; text-align: center;">DNI</th>
-            <th style="border:1px solid #ccc; font-size:8px; text-align: center;">NOMBRES Y APELLIDOS</th>
-            <th style="border:1px solid #ccc; font-size:8px; text-align: center;">CORREO ELECTRÓNICO</th>
-            <th style="border:1px solid #ccc; font-size:8px; text-align: center;">TELÉFONO</th>
+            <th style="border:1px solid #ccc; font-size:8px; text-align: center;">CÓDIGO<br>PATRIMONIAL</th>
+            <th style="border:1px solid #ccc; font-size:8px; text-align: center;">DENOMINACIÓN</th>
+            <th style="border:1px solid #ccc; font-size:8px; text-align: center;">MARCA</th>
+            <th style="border:1px solid #ccc; font-size:8px; text-align: center;">MODELO</th>
+            <th style="border:1px solid #ccc; font-size:8px; text-align: center;">COLOR</th>
+            <th style="border:1px solid #ccc; font-size:8px; text-align: center;">AMBIENTE</th>
             <th style="border:1px solid #ccc; font-size:8px; text-align: center;">ESTADO</th>
         </tr>
     </thead>
@@ -118,24 +120,25 @@ $contenido_pdf = '
 // Verificar si hay contenido en la respuesta
 if (isset($respuesta['contenido']) && !empty($respuesta['contenido'])) {
     $i = 1;
-    foreach ($respuesta['contenido'] as $usuario) {
-        $estado = ($usuario['estado'] == 1) ? 'ACTIVO' : 'INACTIVO';
+    foreach ($respuesta['contenido'] as $bien) {
         $contenido_pdf .= '
         <tr style="background-color:' . ($i % 2 == 0 ? '#f9f9f9' : '#ffffff') . ';">
             <td style="border:1px solid #ccc; font-size:8px;">' . $i . '</td>
-            <td style="border:1px solid #ccc; font-size:8px;">' . $usuario['dni'] . '</td>
-            <td style="border:1px solid #ccc; font-size:8px;">' . $usuario['nombres_apellidos'] . '</td>
-            <td style="border:1px solid #ccc; font-size:8px;">' . $usuario['correo'] . '</td>
-            <td style="border:1px solid #ccc; font-size:8px;">' . $usuario['telefono'] . '</td>
-            <td style="border:1px solid #ccc; font-size:8px;">' . $estado . '</td>
+            <td style="border:1px solid #ccc; font-size:8px;">' . $bien['cod_patrimonial'] . '</td>
+            <td style="border:1px solid #ccc; font-size:8px;">' . $bien['denominacion'] . '</td>
+            <td style="border:1px solid #ccc; font-size:8px;">' . $bien['marca'] . '</td>
+            <td style="border:1px solid #ccc; font-size:8px;">' . $bien['modelo'] . '</td>
+            <td style="border:1px solid #ccc; font-size:8px;">' . $bien['color'] . '</td>
+            <td style="border:1px solid #ccc; font-size:8px;">' . (isset($bien['ambiente']['detalle']) ? $bien['ambiente']['detalle'] : 'N/A') . '</td>
+            <td style="border:1px solid #ccc; font-size:8px;">' . $bien['estado_conservacion'] . '</td>
         </tr>';
         $i++;
     }
 } else {
     $contenido_pdf .= '
     <tr>
-        <td colspan="6" style="text-align:center; border:1px solid #ccc; font-size:12.5px;">
-            No se encontraron usuarios registrados.
+        <td colspan="8" style="text-align:center; border:1px solid #ccc; font-size:12.5px;">
+            No se encontraron bienes registrados.
         </td>
     </tr>';
 }
@@ -157,7 +160,7 @@ $contenido_pdf .= '
 $pdf->writeHTML($contenido_pdf, true, false, true, false, '');
 
 // Salida del PDF
-$pdf->Output('reporte_usuarios.pdf', 'I');
+$pdf->Output('reporte_bienes.pdf', 'I');
 //============================================================+
 // END OF FILE
 //============================================================+

@@ -260,3 +260,4 @@ $curl = curl_init(); //inicia la sesión cURL
     }
 
 ?>
+

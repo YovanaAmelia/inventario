@@ -1,353 +1,273 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
+require_once "../library/conexion.php";
 
-session_start();
-require_once('../model/admin-sesionModel.php');
-require_once('../model/admin-usuarioModel.php');
-require_once('../model/adminModel.php');
+class UsuarioModel
+{
 
-require '../../vendor/autoload.php';
-require '../../vendor/phpmailer/phpmailer/src/Exception.php';
-require '../../vendor/phpmailer/phpmailer/src/PHPMailer.php';
-require '../../vendor/phpmailer/phpmailer/src/SMTP.php';
-$tipo = $_GET['tipo'];
-
-
-//instanciar la clase categoria model
-$objSesion = new SessionModel();
-$objUsuario = new UsuarioModel();
-$objAdmin = new AdminModel();
-
-//variables de sesion
-$id_sesion = $_REQUEST['sesion'];
-$token = $_REQUEST['token'];
-
-if($tipo == "listar_todos_usuarios"){
-   echo "hola";
-}
-
-if($tipo == "cambiarPassword"){
-  $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-
-    if($_POST){
-
-      $id_usu = $_POST['id'];
-      $nuevaContrasena = $_POST['password'];
-      $contraHash = password_hash($nuevaContrasena, PASSWORD_DEFAULT);
-      
-      if ($id_usu == "" || $nuevaContrasena == "") {
-        //repuesta
-        $arr_Respuesta = array('status' => false, 'mensaje' => 'Error, campos vacíos');
-    } else {
-        $arr_Usuario = $objUsuario->actualizarPassword($id_usu,$contraHash);
-        if ($arr_Usuario) {
-          $tokenvacio = '';
-          $estadov = 0;
-          $resetearCampos = $objUsuario->updateResetPassword($id_usu,$tokenvacio,$estadov);
-           if($resetearCampos){
-            $arr_Respuesta = array('status' => true, 'mensaje' => 'Contrasena cambiada con exito');
-           }
+    private $conexion;
+    function __construct()
+    {
+        $this->conexion = new Conexion();
+        $this->conexion = $this->conexion->connect();
+    }
+    public function registrarUsuario($dni, $apellidos_nombres, $correo, $telefono, $password)
+    {
+        $password_secure = password_hash($password, PASSWORD_DEFAULT); // Hash de la contraseña
+        $sql = $this->conexion->query("INSERT INTO usuarios (dni, nombres_apellidos, correo, telefono, password) VALUES ('$dni','$apellidos_nombres','$correo','$telefono', '$password_secure')");
+        if ($sql) {
+            $sql = $this->conexion->insert_id;
         } else {
-           $arr_Respuesta = array('status' => false, 'mensaje' => 'Error al actualizar contrasena');
-            
+            $sql = 0;
         }
+        return $sql;
     }
+    public function actualizarUsuario($id, $dni, $nombres_apellidos, $correo, $telefono, $estado)
+    {
+        $sql = $this->conexion->query("UPDATE usuarios SET dni='$dni',nombres_apellidos='$nombres_apellidos',correo='$correo',telefono='$telefono',estado ='$estado' WHERE id='$id'");
+        return $sql;
     }
-    echo json_encode($arr_Respuesta);
-}
-
-if ($tipo == "validar_datos_reset_password") {
-  $id_email = $_POST['id'];
-  $token_email = $_POST['token'];
-  $arr_Respuesta = array('status'=> false, 'msg' => 'link Caducado');
-  $datos_usuario = $objUsuario->buscarUsuarioById($id_email);
-  if ($datos_usuario->reset_password==1 && password_verify($datos_usuario->token_password,$token_email)){
-       $arr_Respuesta = array('status'=> true, 'msg' => 'Ok');
-  }
-  echo json_encode($arr_Respuesta);
-}
-
-if ($tipo == "listar_usuarios_ordenados_tabla") {
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        //print_r($_POST);
-        $pagina = $_POST['pagina'];
-        $cantidad_mostrar = $_POST['cantidad_mostrar'];
-        $busqueda_tabla_dni = $_POST['busqueda_tabla_dni'];
-        $busqueda_tabla_nomap = $_POST['busqueda_tabla_nomap'];
-        $busqueda_tabla_estado = $_POST['busqueda_tabla_estado'];
-        //repuesta
-        $arr_Respuesta = array('status' => false, 'contenido' => '');
-        $busqueda_filtro = $objUsuario->buscarUsuariosOrderByApellidosNombres_tabla_filtro($busqueda_tabla_dni, $busqueda_tabla_nomap, $busqueda_tabla_estado);
-        $arr_Usuario = $objUsuario->buscarUsuariosOrderByApellidosNombres_tabla($pagina, $cantidad_mostrar, $busqueda_tabla_dni, $busqueda_tabla_nomap, $busqueda_tabla_estado);
-        $arr_contenido = [];
-        if (!empty($arr_Usuario)) {
-            // recorremos el array para agregar las opciones de las categorias
-            for ($i = 0; $i < count($arr_Usuario); $i++) {
-                // definimos el elemento como objeto
-                $arr_contenido[$i] = (object) [];
-                // agregamos solo la informacion que se desea enviar a la vista
-                $arr_contenido[$i]->id = $arr_Usuario[$i]->id;
-                $arr_contenido[$i]->dni = $arr_Usuario[$i]->dni;
-                $arr_contenido[$i]->nombres_apellidos = $arr_Usuario[$i]->nombres_apellidos;
-                $arr_contenido[$i]->correo = $arr_Usuario[$i]->correo;
-                $arr_contenido[$i]->telefono = $arr_Usuario[$i]->telefono;
-                $arr_contenido[$i]->estado = $arr_Usuario[$i]->estado;
-                $opciones = '<button type="button" title="Editar" class="btn btn-primary waves-effect waves-light" data-toggle="modal" data-target=".modal_editar' . $arr_Usuario[$i]->id . '"><i class="fa fa-edit"></i></button>
-                                <button class="btn btn-info" title="Resetear Contraseña" onclick="reset_password(' . $arr_Usuario[$i]->id . ')"><i class="fa fa-key"></i></button>';
-                $arr_contenido[$i]->options = $opciones;
-            }
-            $arr_Respuesta['total'] = count($busqueda_filtro);
-            $arr_Respuesta['status'] = true;
-            $arr_Respuesta['contenido'] = $arr_contenido;
+    public function actualizarPassword($id, $password)
+    {
+        $sql = $this->conexion->query("UPDATE usuarios SET password ='$password' WHERE id='$id'");
+        return $sql;
+    }
+    public function updateResetPassword($id,$token,$estado){
+        $sql = $this->conexion->query("UPDATE usuarios SET token_password ='$token', reset_password='$estado' WHERE id='$id'");
+        return $sql;
+    }
+    public function buscarUsuarioById($id)
+    {
+        $sql = $this->conexion->query("SELECT * FROM usuarios WHERE id='$id'");
+        $sql = $sql->fetch_object();
+        return $sql;
+    }
+    public function buscarUsuarioByDni($dni)
+    {
+        $sql = $this->conexion->query("SELECT * FROM usuarios WHERE dni='$dni'");
+        $sql = $sql->fetch_object();
+        return $sql;
+    }
+    public function buscarUsuarioByNomAp($nomap)
+    {
+        $sql = $this->conexion->query("SELECT * FROM usuarios WHERE nombres_apellidos='$nomap'");
+        $sql = $sql->fetch_object();
+        return $sql;
+    }
+    public function buscarUsuarioByApellidosNombres_like($dato)
+    {
+        $sql = $this->conexion->query("SELECT * FROM usuarios WHERE nombres_apellidos LIKE '%$dato%'");
+        $sql = $sql->fetch_object();
+        return $sql;
+    }
+    public function buscarUsuarioByDniCorreo($dni, $correo)
+    {
+        $sql = $this->conexion->query("SELECT * FROM usuarios WHERE dni='$dni' AND correo='$correo'");
+        $sql = $sql->fetch_object();
+        return $sql;
+    }
+    public function buscarUsuariosOrdenados()
+    {
+        $arrRespuesta = array();
+        $sql = $this->conexion->query("SELECT * FROM usuarios WHERE estado='1' ORDER BY nombres_apellidos ASC ");
+        while ($objeto = $sql->fetch_object()) {
+            array_push($arrRespuesta, $objeto);
         }
+        return $arrRespuesta;
     }
-    echo json_encode($arr_Respuesta);
-}
-if ($tipo == "registrar") {
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        //print_r($_POST);
-        //repuesta
-        if ($_POST) {
-            $dni = $_POST['dni'];
-            $apellidos_nombres = $_POST['apellidos_nombres'];
-            $correo = $_POST['correo'];
-            $telefono = $_POST['telefono'];
-            $password = password_hash($dni,PASSWORD_DEFAULT);
-
-
-            if ($dni == "" || $apellidos_nombres == "" || $correo == "" || $telefono == "") {
-                //repuesta
-                $arr_Respuesta = array('status' => false, 'mensaje' => 'Error, campos vacíos');
-            } else {
-                $arr_Usuario = $objUsuario->buscarUsuarioByDni($dni);
-                if ($arr_Usuario) {
-                    $arr_Respuesta = array('status' => false, 'mensaje' => 'Registro Fallido, Usuario ya se encuentra registrado');
-                } else {
-                    $id_usuario = $objUsuario->registrarUsuario($dni, $apellidos_nombres, $correo, $telefono,$password);
-                    if ($id_usuario > 0) {
-                        // array con los id de los sistemas al que tendra el acceso con su rol registrado
-                        // caso de administrador y director
-                        $arr_Respuesta = array('status' => true, 'mensaje' => 'Registro Exitoso');
-                    } else {
-                        $arr_Respuesta = array('status' => false, 'mensaje' => 'Error al registrar producto');
-                    }
-                }
-            }
+   
+    public function buscarUsuariosOrderByApellidosNombres_tabla_filtro($busqueda_tabla_dni, $busqueda_tabla_nomap, $busqueda_tabla_estado)
+    {
+        //condicionales para busqueda
+        $condicion = "";
+        $condicion .= " dni LIKE '$busqueda_tabla_dni%' AND nombres_apellidos LIKE '$busqueda_tabla_nomap%'";
+        if ($busqueda_tabla_estado != '') {
+            $condicion .= " AND estado = '$busqueda_tabla_estado'";
         }
-    }
-    echo json_encode($arr_Respuesta);
-}
-
-if ($tipo == "actualizar") {
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        //print_r($_POST);
-        //repuesta
-        if ($_POST) {
-            $id = $_POST['data'];
-            $dni = $_POST['dni'];
-            $nombres_apellidos = $_POST['nombres_apellidos'];
-            $correo = $_POST['correo'];
-            $telefono = $_POST['telefono'];
-            $estado = $_POST['estado'];
-
-            if ($id == "" || $dni == "" || $nombres_apellidos == "" || $correo == "" || $telefono == "" || $estado == "") {
-                //repuesta
-                $arr_Respuesta = array('status' => false, 'mensaje' => 'Error, campos vacíos');
-            } else {
-                $arr_Usuario = $objUsuario->buscarUsuarioByDni($dni);
-                if ($arr_Usuario) {
-                    if ($arr_Usuario->id == $id) {
-                        $consulta = $objUsuario->actualizarUsuario($id, $dni, $nombres_apellidos, $correo, $telefono, $estado);
-                        if ($consulta) {
-                            $arr_Respuesta = array('status' => true, 'mensaje' => 'Actualizado Correctamente');
-                        } else {
-                            $arr_Respuesta = array('status' => false, 'mensaje' => 'Error al actualizar registro');
-                        }
-                    } else {
-                        $arr_Respuesta = array('status' => false, 'mensaje' => 'dni ya esta registrado');
-                    }
-                } else {
-                    $consulta = $objUsuario->actualizarUsuario($id, $dni, $nombres_apellidos, $correo, $telefono, $estado);
-                    if ($consulta) {
-                        $arr_Respuesta = array('status' => true, 'mensaje' => 'Actualizado Correctamente');
-                    } else {
-                        $arr_Respuesta = array('status' => false, 'mensaje' => 'Error al actualizar registro');
-                    }
-                }
-            }
+        $arrRespuesta = array();
+        $respuesta = $this->conexion->query("SELECT * FROM usuarios WHERE $condicion ORDER BY nombres_apellidos");
+        while ($objeto = $respuesta->fetch_object()) {
+            array_push($arrRespuesta, $objeto);
         }
+        return $arrRespuesta;
     }
-    echo json_encode($arr_Respuesta);
-}
-if ($tipo == "reiniciar_password") {
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        //print_r($_POST);
-        $id_usuario = $_POST['id'];
-        $password = $objAdmin->generar_llave(10);
-        $pass_secure = password_hash($password, PASSWORD_DEFAULT);
-        $actualizar = $objUsuario->actualizarPassword($id_usuario, $pass_secure);
-        if ($actualizar) {
-            $arr_Respuesta = array('status' => true, 'mensaje' => 'Contraseña actualizado correctamente a: ' . $password);
-        } else {
-            $arr_Respuesta = array('status' => false, 'mensaje' => 'Hubo un problema al actualizar la contraseña, intente nuevamente');
+    public function buscarUsuariosOrderByApellidosNombres_tabla($pagina, $cantidad_mostrar, $busqueda_tabla_dni, $busqueda_tabla_nomap, $busqueda_tabla_estado)
+    {
+        //condicionales para busqueda
+        $condicion = "";
+        $condicion .= " dni LIKE '$busqueda_tabla_dni%' AND nombres_apellidos LIKE '$busqueda_tabla_nomap%'";
+        if ($busqueda_tabla_estado != '') {
+            $condicion .= " AND estado = '$busqueda_tabla_estado'";
         }
+        $iniciar = ($pagina - 1) * $cantidad_mostrar;
+        $arrRespuesta = array();
+        $respuesta = $this->conexion->query("SELECT * FROM usuarios WHERE $condicion ORDER BY nombres_apellidos LIMIT $iniciar, $cantidad_mostrar");
+        while ($objeto = $respuesta->fetch_object()) {
+            array_push($arrRespuesta, $objeto);
+        }
+        return $arrRespuesta;
     }
-    echo json_encode($arr_Respuesta);
-}
-if ($tipo == "sent_email_password"){
-    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
-        $datos_sesion = $objSesion->buscarSesionLoginById($id_sesion);
-        $datos_usuario = $objUsuario->buscarUsuarioById($datos_sesion->id_usuario);
-        $llave = $objAdmin->generar_llave(30);
-        $token = password_hash($llave,PASSWORD_DEFAULT);
-        $update = $objUsuario->updateResetPassword($datos_sesion->id_usuario, $llave, 1);
-        if ($update) {
 
-           //Import PHPMailer classes into the global namespace
-//These must be at the top of your script, not inside a function
-
-
-//Load Composer's autoloader (created by composer, not included with PHPMailer)
-
-
-//Create an instance; passing true enables exceptions
-$mail = new PHPMailer(true);
-
-try {
-    //Server settings
-    $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
-    $mail->isSMTP();                                            //Send using SMTP
-    $mail->Host       = 'mail.limon-cito.com';                     //Set the SMTP server to send through
-    $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-    $mail->Username   = 'inventario_maribelvilca@limon-cito.com';                     //SMTP username
-    $mail->Password   = 'XdYJjh[K9#v~';                               //SMTP password
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
-    $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS
-
-    //Recipients
-    $mail->setFrom('inventario_maribelvilca@limon-cito.com', 'Cambio de contraseña');
-    $mail->addAddress($datos_usuario->correo, $datos_usuario->nombres_apellidos);     //Add a recipient
-    /*$mail->addAddress('ellen@example.com');               //Name is optional
-    $mail->addReplyTo('info@example.com', 'Information');
-    $mail->addCC('cc@example.com');
-    $mail->addBCC('bcc@example.com');
-
-    //Attachments
-    $mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
-    $mail->addAttachment('/tmp/image.jpg', 'new.jpg');    //Optional name
-
-    //Content*/
-    $mail->isHTML(true); 
-    $mail->CharSet = 'UTF-8';                               //Set email format to HTML
-    $mail->Subject = 'Cambio de Contraseña - Sistema de Inventario';
-    $mail->Body    = '
-    <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calzados MIA</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #fef8f2 ;
-    }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background-color: #fef8f2;
-      font-family: Arial, sans-serif;
-      color: #333333;
-      border: 2px solid #b30059;
-      
-    }
-    .header {
-      background-color: #b30059;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-    .content {
-      padding: 30px;
-    }
-    .content h1 {
-      font-size: 22px;
-      margin-bottom: 20px;
-    }
-    .content p {
-      font-size: 16px;
-      line-height: 1.5;
-    }
-    .button {
-      display: inline-block;
-      background-color: #b30059 ;
-      color: #ffffff !important;
-      padding: 12px 25px;
-      margin: 20px 0;
-      text-decoration: none;
-      border-radius: 4px;
-    }
-    .footer {
-      background-color: #fce4ec;
-      text-align: center;
-      padding: 15px;
-      font-size: 12px;
-      color: #666666;
-    }
-    @media screen and (max-width: 600px) {
-      .content, .header, .footer {
-        padding: 15px !important;
-      }
-      .button {
-        padding: 10px 20px !important;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>Calzados Mia</h1>
-    </div>
-    <div class="content">
-      <h1>Hola '.$datos_usuario->nombres_apellidos.',</h1>
-      <p>
-        Te saludamos cordialmente. Queremos informarte sobre nuestras últimas novedades y promociones exclusivas para ti.
-      </p>
-      <p>
-        ¡No te pierdas nuestras ofertas especiales por tiempo limitado!
-      </p>
-      <a href="'.BASE_URL.'reset-password/?data='.$datos_usuario->id.'&data2='.urlencode($token) .'" class="button">Cambiar mi contraseña</a>
-      <p>Gracias por confiar en nosotros.</p>
-    </div>
-    <div class="footer">
-      © 2025 Nombre de tu empresa. Todos los derechos reservados.<br>
-      <a href="https://www.tusitio.com/desuscribirse">Cancelar suscripción</a>
-    </div>
-  </div>
-</body>
-</html>
-    ';
+    // Método para el filtro completo (Excel y otros reportes)
+public function buscarUsuariosConDetalles_tabla_filtro($busqueda_nombre, $busqueda_dni, $busqueda_estado)
+{
+    $condicion = " 1=1 ";
     
-
-    $mail->send();
-    echo 'Message has been sent';
-} catch (Exception $e) {
-    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-}
-        }else{
-            echo "fallo al actualizar";
-        }
-
-        //print_r($token);
-
+    if (!empty($busqueda_nombre)) {
+        $condicion .= " AND u.nombres_apellidos LIKE '%$busqueda_nombre%'";
     }
+    if (!empty($busqueda_dni)) {
+        $condicion .= " AND u.dni LIKE '%$busqueda_dni%'";
+    }
+    if ($busqueda_estado !== '' && $busqueda_estado != 'todos') {
+        $condicion .= " AND u.estado = '$busqueda_estado'";
+    }
+    
+    $arrRespuesta = array();
+    $query = "
+        SELECT 
+            u.*,
+            MAX(s.fecha_hora_inicio) AS ultimo_acceso
+        FROM usuarios u
+        LEFT JOIN sesiones s ON u.id = s.id_usuario
+        WHERE $condicion
+        GROUP BY u.id
+        ORDER BY u.fecha_registro DESC
+    ";
+    
+    $respuesta = $this->conexion->query($query);
+    while ($objeto = $respuesta->fetch_object()) {
+        array_push($arrRespuesta, $objeto);
+    }
+    return $arrRespuesta;
+}
+
+// Método para paginación con detalles completos
+public function buscarUsuariosConDetalles_tabla($pagina, $cantidad_mostrar, $busqueda_nombre, $busqueda_dni, $busqueda_estado)
+{
+    $condicion = " 1=1 ";
+    
+    if (!empty($busqueda_nombre)) {
+        $condicion .= " AND u.nombres_apellidos LIKE '%$busqueda_nombre%'";
+    }
+    if (!empty($busqueda_dni)) {
+        $condicion .= " AND u.dni LIKE '%$busqueda_dni%'";
+    }
+    if ($busqueda_estado !== '' && $busqueda_estado != 'todos') {
+        $condicion .= " AND u.estado = '$busqueda_estado'";
+    }
+    
+    $inicio = ($pagina - 1) * $cantidad_mostrar;
+    
+    $arrRespuesta = array();
+    $query = "
+        SELECT 
+            u.*,
+            MAX(s.fecha_hora_inicio) AS ultimo_acceso,
+            COUNT(s.id) AS total_sesiones
+        FROM usuarios u
+        LEFT JOIN sesiones s ON u.id = s.id_usuario
+        WHERE $condicion
+        GROUP BY u.id
+        ORDER BY u.fecha_registro DESC
+        LIMIT $inicio, $cantidad_mostrar
+    ";
+    
+    $respuesta = $this->conexion->query($query);
+    while ($objeto = $respuesta->fetch_object()) {
+        array_push($arrRespuesta, $objeto);
+    }
+    return $arrRespuesta;
+}
+
+// Método para contar total de usuarios con filtros (para paginación)
+public function contarUsuariosConFiltros($busqueda_nombre, $busqueda_dni, $busqueda_estado)
+{
+    $condicion = " 1=1 ";
+    
+    if (!empty($busqueda_nombre)) {
+        $condicion .= " AND nombres_apellidos LIKE '%$busqueda_nombre%'";
+    }
+    if (!empty($busqueda_dni)) {
+        $condicion .= " AND dni LIKE '%$busqueda_dni%'";
+    }
+    if ($busqueda_estado !== '' && $busqueda_estado != 'todos') {
+        $condicion .= " AND estado = '$busqueda_estado'";
+    }
+    
+    $query = "SELECT COUNT(*) as total FROM usuarios WHERE $condicion";
+    $respuesta = $this->conexion->query($query);
+    $objeto = $respuesta->fetch_object();
+    
+    return $objeto->total;
+}
+
+// Método para obtener estadísticas de usuarios
+public function obtenerEstadisticasUsuarios()
+{
+    $arrRespuesta = array();
+    
+    $query = "
+        SELECT 
+            COUNT(*) as total_usuarios,
+            SUM(CASE WHEN estado = 1 THEN 1 ELSE 0 END) as usuarios_activos,
+            SUM(CASE WHEN estado = 0 THEN 1 ELSE 0 END) as usuarios_inactivos,
+            COUNT(DISTINCT DATE(fecha_registro)) as dias_con_registros
+        FROM usuarios
+    ";
+    
+    $respuesta = $this->conexion->query($query);
+    $objeto = $respuesta->fetch_object();
+    
+    return $objeto;
+}
+
+// Método para obtener usuarios más activos (con más sesiones)
+public function obtenerUsuariosMasActivos($limite = 5)
+{
+    $arrRespuesta = array();
+    
+    $query = "
+        SELECT 
+            u.id,
+            u.nombres_apellidos,
+            u.dni,
+            COUNT(s.id) as total_sesiones,
+            MAX(s.fecha_hora_inicio) as ultimo_acceso
+        FROM usuarios u
+        LEFT JOIN sesiones s ON u.id = s.id_usuario
+        WHERE u.estado = 1
+        GROUP BY u.id
+        ORDER BY total_sesiones DESC, ultimo_acceso DESC
+        LIMIT $limite
+    ";
+    
+    $respuesta = $this->conexion->query($query);
+    while ($objeto = $respuesta->fetch_object()) {
+        array_push($arrRespuesta, $objeto);
+    }
+    
+    return $arrRespuesta;
+}
+public function listarTodosLosUsuarios()
+{
+    $arrRespuesta = array();
+    $query = "
+        SELECT
+            u.id,
+            u.dni,
+            u.nombres_apellidos,
+            u.correo,
+            u.telefono,
+            u.estado,
+            u.fecha_registro
+        FROM usuarios u
+        ORDER BY u.nombres_apellidos ASC;
+    ";
+    $respuesta = $this->conexion->query($query);
+    while ($objeto = $respuesta->fetch_object()) {
+        array_push($arrRespuesta, $objeto);
+    }
+    return $arrRespuesta;
+}
+
 }

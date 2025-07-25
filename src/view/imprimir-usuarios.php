@@ -172,8 +172,8 @@ $contenido_pdf .= '
 
 <table style="width:100%; padding: 30px 10px 10px 10px">
     <tr>
-        <td style="text-align:center;">__________________________<br>ELABORADO POR</td>
-        <td style="text-align:center;">__________________________<br>REVISADO POR</td>
+        <td style="text-align:center;">__________<br>ELABORADO POR</td>
+        <td style="text-align:center;">__________<br>REVISADO POR</td>
     </tr>
 </table>';
 

@@ -45,7 +45,7 @@
         </div>
         <div class="card">
             <div class="card-body">
-                <!-- Botones de Excel y PDF -->
+                <!-- Botones de  PDF -->
                 
                 <a href="<?= BASE_URL ?>imprimir-usuarios" class="btn btn-danger waves-effect waves-light">
                     <i class="fa fa-file-pdf"></i> Exportar a PDF

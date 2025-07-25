@@ -24,7 +24,7 @@ $token = $_REQUEST['token'];
 
 if ($tipo == "listar") {
     $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
-    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
+    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)){
         $id_ies = $_POST['ies'];
         //print_r($_POST);
         //repuesta

@@ -24,4 +24,4 @@ if ($tipo == "validar_sesion") {
     $resultado = $objSesion->verificar_sesion_si_activa($id_sesion, $token);
     echo $resultado;
 }
-
+?>

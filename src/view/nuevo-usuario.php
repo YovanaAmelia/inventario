@@ -29,11 +29,12 @@
                         <div class="col-9">
                             <input type="text" class="form-control" id="telefono" name="telefono">
                         </div>
-                    </div>
-                    <div class="form-group row mb-2">
-                        <label for="password" class="col-3 col-form-label">Contraseña</label>
+                        </div>
+
+                        <div class="form-group row mb-2">
+                        <label for="password" class="col-3 col-form-label">password </label>
                         <div class="col-9">
-                            <input type="password" class="form-control" id="password" name="password">
+                            <input type="text" class="form-control" id="password" name="password">
                         </div>
                     </div>         
                     <div class="form-group mb-0 justify-content-end row text-center">

@@ -28,6 +28,7 @@ class MovimientoModel
         } else {
             $sql = 0;
         }
+        
         return $sql;
     }
 

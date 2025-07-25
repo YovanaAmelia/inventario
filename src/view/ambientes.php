@@ -36,7 +36,7 @@
         <div class="card">
             <div class="card-body">
             </a>
-                <a href="<?= BASE_URL ?>imprimir-instituciones" class="btn btn-danger waves-effect waves-light">
+                <a href="<?= BASE_URL ?>imprimir-ambientes" class="btn btn-danger waves-effect waves-light">
                     <i class="fa fa-file-pdf"></i> Exportar a PDF
                 </a>
                 <h4 class="card-title">Resultados de Búsqueda</h4>

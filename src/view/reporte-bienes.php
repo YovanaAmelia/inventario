@@ -87,6 +87,8 @@ $headers = [
     'L' => 'Estado de Conservación',
     'M' => 'Observaciones',
     'N' => 'ID Ambiente'
+   
+    
 ];
 
 // Configurar encabezados con mejor formato

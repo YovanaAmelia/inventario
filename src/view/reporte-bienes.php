@@ -1,6 +1,4 @@
 <?php
-// Asegura la zona horaria correcta
-date_default_timezone_set('America/Lima');
 // =================== INICIA cURL ===================
 $curl = curl_init();
 
@@ -73,7 +71,7 @@ $activeWorksheet->setTitle('Reporte de Bienes');
 
 // Definir los encabezados de las columnas
 $headers = [
-    'A' => 'Nº',
+    'A' => 'ID',
     'B' => 'Código Patrimonial',
     'C' => 'Denominación',
     'D' => 'Marca',
@@ -87,8 +85,6 @@ $headers = [
     'L' => 'Estado de Conservación',
     'M' => 'Observaciones',
     'N' => 'ID Ambiente'
-   
-    
 ];
 
 // Configurar encabezados con mejor formato
@@ -119,10 +115,9 @@ foreach ($headers as $columna => $titulo) {
 // Llenar los datos de los bienes con mejor formato
 $bienes = $responseData['contenido'] ?? [];
 $fila = 2; // Comenzar desde la fila 2 (después de los encabezados)
-$contador = 1;
 
 foreach ($bienes as $bien) {
-    $activeWorksheet->setCellValue('A' . $fila, $contador);
+    $activeWorksheet->setCellValue('A' . $fila, $bien['id'] ?? '');
     $activeWorksheet->setCellValue('B' . $fila, $bien['cod_patrimonial'] ?? '');
     $activeWorksheet->setCellValue('C' . $fila, $bien['denominacion'] ?? '');
     $activeWorksheet->setCellValue('D' . $fila, $bien['marca'] ?? '');
@@ -166,7 +161,6 @@ foreach ($bienes as $bien) {
             ->setVertical(Alignment::VERTICAL_CENTER);
     }
     
-    $contador++;
     $fila++;
 }
 
@@ -204,7 +198,7 @@ $activeWorksheet->getStyle('A' . $filaInfo)->getFont()->setBold(true);
 
 // Configurar headers para descarga directa
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="reporte_bienes_' . date('d-m-Y H-i-s') . '.xlsx"');
+header('Content-Disposition: attachment;filename="reporte_bienes.xlsx"');
 header('Cache-Control: max-age=0');
 header('Expires: 0');
 header('Pragma: public');

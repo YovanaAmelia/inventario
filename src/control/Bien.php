@@ -1,22 +1,26 @@
 <?php
 session_start();
 require_once('../model/admin-sesionModel.php');
-require_once('../model/admin-bienModel.php');
-require_once('../model/admin-ingresoModel.php');
+require_once('../model/admin-movimientoModel.php');
 require_once('../model/admin-ambienteModel.php');
+require_once('../model/admin-bienModel.php');
+require_once('../model/admin-institucionModel.php');
+require_once('../model/admin-usuarioModel.php');
 require_once('../model/adminModel.php');
 $tipo = $_GET['tipo'];
 
 //instanciar la clase categoria model
 $objSesion = new SessionModel();
-$objBien = new BienModel();
-$objIngreso = new IngresoModel();
+$objMovimiento = new MovimientoModel();
 $objAmbiente = new AmbienteModel();
+$objBien = new BienModel();
 $objAdmin = new AdminModel();
+$objInstitucion = new InstitucionModel();
+$objUsuario = new UsuarioModel();
 
 //variables de sesion
-$id_sesion = $_POST['sesion'];
-$token = $_POST['token'];
+$id_sesion = $_REQUEST['sesion'];
+$token = $_REQUEST['token'];
 
 if ($tipo == "buscar_bien_movimiento") {
     $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
@@ -227,3 +231,56 @@ if ($tipo == "datos_registro") {
     }
     echo json_encode($arr_Respuesta);
 }
+if ($tipo == "listar_todos_bienes") {
+    $arr_Respuesta = array('status' => false, 'msg' => 'Error_Sesion');
+    
+    if ($objSesion->verificar_sesion_si_activa($id_sesion, $token)) {
+        $arr_Respuesta = array('status' => false, 'contenido' => []);
+        $arr_Bienes = $objBien->listarTodosLosBienes();
+        
+        $arr_contenido = [];
+        if (!empty($arr_Bienes)) {
+            foreach ($arr_Bienes as $bien) {
+                $arr_contenido[] = [
+                    'cod_patrimonial' => $bien->cod_patrimonial,
+                    'denominacion' => $bien->denominacion,
+                    'marca' => $bien->marca,
+                    'modelo' => $bien->modelo,
+                    'tipo' => $bien->tipo,
+                    'color' => $bien->color,
+                    'serie' => $bien->serie,
+                    'dimensiones' => $bien->dimensiones,
+                    'valor' => $bien->valor,
+                    'situacion' => $bien->situacion,
+                    'estado_conservacion' => $bien->estado_conservacion,
+                    'observaciones' => $bien->observaciones,
+                    'fecha_registro' => $bien->fecha_registro,
+                    'ambiente_institucion' => [
+                        'id' => $bien->ambiente_id,
+                        'codigo' => $bien->ambiente_codigo,
+                        'detalle' => $bien->ambiente_detalle,
+                        'otros_detalle' => $bien->otros_detalle,
+                        'encargado' => $bien->ambiente_encargado,
+                        'institucion' => [
+                            'id' => $bien->institucion_id,
+                            'nombre' => $bien->institucion_nombre,
+                            'cod_modular' => $bien->institucion_cod_modular,
+                            'ruc' => $bien->institucion_ruc
+                        ]
+                    ],
+                    'usuario' => [
+                        'id' => $bien->usuario_id,
+                        'nombres_apellidos' => $bien->nombre_usuario,
+                        'dni' => $bien->usuario_dni
+                    ]
+                ];
+            }
+            $arr_Respuesta['status'] = true;
+            $arr_Respuesta['contenido'] = $arr_contenido;
+        }
+    }
+    
+    echo json_encode($arr_Respuesta);
+}
+
+?>

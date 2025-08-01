@@ -10,7 +10,20 @@ class BienModel
         $this->conexion = new Conexion();
         $this->conexion = $this->conexion->connect();
     }
-    public function registrarBien($ambiente, $cod_patrimonial, $denominacion, $marca, $modelo, $tipo, $color, $serie, $dimensiones, $valor, $situacion, $estado_conservacion, $observaciones, $id_usuario,$id_ingreso)
+
+    public function obtenerBienes()
+    {
+        $query = "SELECT b.*, ai.detalle as ambiente_detalle FROM bienes b JOIN ambientes_institucion ai ON b.id_ambiente = ai.id";
+        $result = $this->conexion->query($query);
+
+        $bienes = [];
+        while ($row = $result->fetch_assoc()) {
+            $bienes[] = $row;
+        }
+
+        return $bienes;
+    }
+    public function registrarBien($ambiente, $cod_patrimonial, $denominacion, $marca, $modelo, $tipo, $color, $serie, $dimensiones, $valor, $situacion, $estado_conservacion, $observaciones, $id_usuario, $id_ingreso)
     {
         $sql = $this->conexion->query("INSERT INTO bienes (id_ingreso_bienes ,id_ambiente,cod_patrimonial, denominacion, marca,modelo,tipo,color,serie,dimensiones,valor,situacion,estado_conservacion,observaciones,usuario_registro ) VALUES ('$id_ingreso','$ambiente', '$cod_patrimonial','$denominacion', '$marca', '$modelo', '$tipo', '$color', '$serie', '$dimensiones', '$valor', '$situacion', '$estado_conservacion', '$observaciones', '$id_usuario')");
         if ($sql) {
@@ -91,13 +104,55 @@ class BienModel
         }
         return $arrRespuesta;
     }
-    public function listarBienes(){
-        $arrRespuesta = array();
-        $sql = $this->conexion->query("SELECT * FROM bienes");
+    public function listarTodosLosBienes()
+{
+    $arrRespuesta = array();
+    $query = "
+        SELECT 
+            b.id AS bien_id,
+            b.cod_patrimonial,
+            b.denominacion,
+            b.marca,
+            b.modelo,
+            b.tipo,
+            b.color,
+            b.serie,
+            b.dimensiones,
+            b.valor,
+            b.situacion,
+            b.estado_conservacion,
+            b.observaciones,
+            b.fecha_registro,
+            b.estado AS estado_bien,
+            
+            ai.id AS ambiente_id,
+            ai.codigo AS ambiente_codigo,
+            ai.detalle AS ambiente_detalle,
+            ai.otros_detalle,
+            ai.encargado AS ambiente_encargado,
+            
+            -- AGREGAR INFORMACIÓN DE LA INSTITUCIÓN
+            i.id AS institucion_id,
+            i.nombre AS institucion_nombre,
+            i.cod_modular AS institucion_cod_modular,
+            i.ruc AS institucion_ruc,
+            
+            u.id AS usuario_id,
+            u.nombres_apellidos AS nombre_usuario,
+            u.dni AS usuario_dni 
+        FROM bienes b 
+        LEFT JOIN ambientes_institucion ai ON b.id_ambiente = ai.id 
+        LEFT JOIN institucion i ON ai.id_ies = i.id  -- JOIN CON INSTITUCIÓN
+        LEFT JOIN usuarios u ON b.usuario_registro = u.id 
+        WHERE b.estado = 1  -- Solo bienes activos
+        ORDER BY b.fecha_registro ASC;
+    ";
     
-        while ($objeto = $sql->fetch_object()) {
-            array_push($arrRespuesta, $objeto);
-        }
-        return $arrRespuesta;
-        }
+    $respuesta = $this->conexion->query($query);
+    while ($objeto = $respuesta->fetch_object()) {
+        array_push($arrRespuesta, $objeto);
+    }
+    return $arrRespuesta;
 }
+}
+?>
